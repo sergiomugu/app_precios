@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta de Precios - CYGLASER</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f2f2f2;
+    }
+
+    .app-container {
+        max-width: 500px;
+        margin: auto;
+        padding: 15px;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    input[type="text"] {
+        flex: 1;
+        padding: 14px;
+        font-size: 18px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        outline: none;
+    }
+
+    button {
+        padding: 14px 18px;
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+    }
+
+    button:active {
+        background: #005fcc;
+    }
+
+    /* Botón Limpiar */
+    .btn-clear {
+        background: #e0e0e0;
+        border: none;
+        padding: 12px 14px;
+        font-size: 16px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    .btn-clear:active { transform: scale(0.98); }
+    .btn-clear.hidden { display: none; }
+
+    .result {
+        margin-top: 20px;
+    }
+
+    .card {
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+        margin-bottom: 12px;
+    }
+
+    .codigo {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .nombre {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 5px;
+    }
+
+    .precio {
+        font-size: 22px;
+        margin-top: 8px;
+        color: #28a745;
+        font-weight: bold;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="app-container">
+    <h2>Consulta de Precios - CYGLASER</h2>
+
+    <!-- Buscador con botón Limpiar -->
+    <div class="search-box">
+        <input id="inputBuscador" type="text" placeholder="Buscar producto..." autocomplete="off" />
+        <button onclick="buscar()" aria-label="Buscar">🔍</button>
+        <button id="btnLimpiar" class="btn-clear hidden" aria-label="Limpiar búsqueda" title="Limpiar búsqueda">✖</button>
+    </div>
+
+    <div id="resultados" class="result"></div>
+</div>
+
+<script>
+/* Variables */
+const inputBuscador = document.getElementById('inputBuscador');
+const btnLimpiar = document.getElementById('btnLimpiar');
+const contResultados = document.getElementById('resultados');
+
+/* Mostrar/ocultar botón limpiar */
+inputBuscador.addEventListener('input', () => {
+    if (inputBuscador.value.trim().length > 0) {
+        btnLimpiar.classList.remove('hidden');
+    } else {
+        btnLimpiar.classList.add('hidden');
+    }
+});
+
+/* Acción del botón limpiar */
+btnLimpiar.addEventListener('click', (e) => {
+    e.preventDefault();
+    inputBuscador.value = '';
+    btnLimpiar.classList.add('hidden');
+
+    /* Limpia resultados en pantalla */
+    contResultados.innerHTML = "";
+
+    inputBuscador.focus();
+});
+
+/* Limpiar con tecla ESC */
+inputBuscador.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        btnLimpiar.click();
+    }
+});
+
+/* Función principal de búsqueda */
+function buscar() {
+    const q = inputBuscador.value.trim();
+    if (q === "") return;
+
+    fetch(`/api?q=${encodeURIComponent(q)}`)
+        .then(res => res.json())
+        .then(data => {
+            contResultados.innerHTML = "";
+
+            if (data.length === 0) {
+                contResultados.innerHTML = "<p>No se encontraron productos.</p>";
+                return;
+            }
+
+            data.forEach(item => {
+                contResultados.innerHTML += `
+                    <div class="card">
+                        <div class="codigo">Cod: ${item.codigo}</div>
+                        <div class="nombre">${item.nombre}</div>
+                        <div class="precio">$ ${item.precio.toFixed(2)}</div>
+                    </div>
+                `;
+            });
+        });
+}
+</script>
+
+</body>
+</html>
